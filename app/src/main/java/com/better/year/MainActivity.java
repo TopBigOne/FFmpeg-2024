@@ -3,6 +3,10 @@ package com.better.year;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,6 +15,8 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+
+import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,6 +32,7 @@ import com.better.year.adapter.MyRecyclerViewAdapter;
 import com.better.year.databinding.ActivityMainBinding;
 import com.better.year.media.FFMediaPlayer;
 
+import java.io.File;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int      FF_AV_RECORDER                   = 6;
     private static final int      FF_STREAM_MEDIA_PLAYER           = 7;
     private static final int      FF_MEDIACODEC_PLAYER             = 8;
-    private static final String[] REQUEST_PERMISSIONS              = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE,};
+    private static final String[] REQUEST_PERMISSIONS              = {Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.CAMERA,};
     private static final int      PERMISSION_REQUEST_CODE          = 1;
 
     private static final String[] EXAMPLE_LIST = {"FFmpeg + ANativeWindow player", "FFmpeg + OpenGL ES player", "FFmpeg + OpenSL ES visual audio", "FFmpeg + OpenGL ES VR player", "FFmpeg + single video recorder", "FFmpeg + single audio recorder", "FFmpeg + AV recorder", "FFmpeg + stream media player", "FFmpeg + MediaCodec player"};
@@ -49,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     private ActivityMainBinding binding;
+
+    String sdCardPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +71,12 @@ public class MainActivity extends AppCompatActivity {
         tv.setText(FFMediaPlayer.GetFFmpegVersion());
 
         mSampleSelectedIndex = -1;
-        CommonUtils.copyAssetsDirToSDCard(this, "byteflow", "/sdcard");
+        File sdCard = getFilesDir();
+        sdCardPath = sdCard.getAbsolutePath();
+
+
         if (!hasPermissionsGranted(REQUEST_PERMISSIONS)) {
+            Log.d(TAG, "    requestPermissions ");
             ActivityCompat.requestPermissions(this, REQUEST_PERMISSIONS, PERMISSION_REQUEST_CODE);
         }
     }
@@ -71,21 +84,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        Log.e(TAG, "onResume: ");
-        showSelectExampleDialog();
+        Log.d(TAG, "onResume: ");
+                showSelectExampleDialog();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.d(TAG, "onRequestPermissionsResult: ");
         if (requestCode == PERMISSION_REQUEST_CODE) {
-            //            if (!hasPermissionsGranted(REQUEST_PERMISSIONS)) {
-            //                Log.e(TAG, "onRequestPermissionsResult: We need the permission: WRITE_EXTERNAL_STORAGE");
-            //                Toast.makeText(this, "We need the permission: WRITE_EXTERNAL_STORAGE", Toast.LENGTH_SHORT).show();
-            //            }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            CommonUtils.copyAssetsDirToSDCard(this, "betteryear", sdCardPath);
+            if (!hasPermissionsGranted(REQUEST_PERMISSIONS)) {
+                Log.e(TAG, "     We need the permission: WRITE_EXTERNAL_STORAGE");
+               //Toast.makeText(this, "We need the permission: WRITE_EXTERNAL_STORAGE", Toast.LENGTH_SHORT).show();
+              //  return;
+            }
+
+          //  CommonUtils.copyAssetsDirToSDCard(this, "betteryear", sdCardPath);
+
+            return;
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
     }
 
     @Override

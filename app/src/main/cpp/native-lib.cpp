@@ -1,8 +1,13 @@
 #include <jni.h>
 #include <string>
 #include "util/LogUtil.h"
+#include "player/PlayerWrapper.h"
+//#include <socket.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 
+using namespace std;
 extern "C" {
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
@@ -13,9 +18,57 @@ extern "C" {
 #include <libswscale/version.h>
 }
 
+void testYUV();
+
+void testYUV() {
+    LOGCATD(__func__)
+
+    LOGCATI("   unsigned int size is  : %lu", sizeof(unsigned int))
+    LOGCATI("   int size is           : %lu", sizeof(int))
+    LOGCATI("   long  size is         : %lu", sizeof(long))
+
+    int y = 0;
+    int height = 8;
+    string yuvStr;
+    LOGCATI("   Case Y: ")
+    // Y
+    for (y = 0; y < height; y++) {
+        yuvStr.append(to_string(y));
+        yuvStr.append(" ");
+    }
+    LOGCATI("           %s", yuvStr.c_str())
+
+
+    // U
+    LOGCATI("   Case U: ")
+    yuvStr.clear();
+    for (y = 0; y < (height + 1) / 2; y++) {
+        yuvStr.append(to_string(y));
+        yuvStr.append(" ");
+    }
+    LOGCATI("           %s", yuvStr.c_str())
+
+
+    // V
+    LOGCATI("   Case V: ")
+    yuvStr.clear();
+    for (y = 0; y < (height + 1) / 2; y++) {
+        yuvStr.append(to_string(y));
+        yuvStr.append(" ");
+    }
+    LOGCATI("           %s", yuvStr.c_str())
+
+}
+
 
 jstring native_GetFFmpegVersion(JNIEnv *env, jclass clazz) {
     LOGCATD(__func__)
+
+    int pageSize = getpagesize();
+    LOGCATI("   Current mem page size is : %d", pageSize)
+    testYUV();
+
+
     char strBuffer[1024 * 4] = {0};
     strcat(strBuffer, "libavcodec : ");
     strcat(strBuffer, AV_STRINGIFY(LIBAVCODEC_VERSION));
@@ -41,18 +94,26 @@ jstring native_GetFFmpegVersion(JNIEnv *env, jclass clazz) {
 }
 
 
-jlong native_Init(JNIEnv *env, jobject thiz, jstring url,
-                  jint player_type, jint render_type,
+jlong native_Init(JNIEnv *env, jobject thiz, jstring jurl, jint player_type, jint render_type,
                   jobject surface) {
     LOGCATD(__func__)
-    // TODO: implement native_Init()
+    const char *url = env->GetStringUTFChars(jurl, JNI_FALSE);
+    LOGCATI("   video_url ： %s", url)
+    auto *playerWrapper = new PlayerWrapper();
+    playerWrapper->Init(env, thiz, const_cast<char *>(url), player_type, render_type, surface);
+    return reinterpret_cast<jlong>(playerWrapper);
+
 }
 
-void
-native_Play(JNIEnv *env, jobject thiz,
-            jlong player_handle) {
+void native_Play(JNIEnv *env, jobject thiz, jlong player_handle) {
     LOGCATD(__func__)
-    // TODO: implement native_Play()
+    if (player_handle != 0) {
+        auto *playerWrapperHandle = reinterpret_cast<PlayerWrapper *>(player_handle);
+        playerWrapperHandle->Play();
+        return;
+    }
+    LOGCATE("   player_handle is NULL")
+
 }
 
 void native_SeekToPosition(JNIEnv *env, jobject thiz,

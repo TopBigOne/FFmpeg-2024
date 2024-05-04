@@ -8,20 +8,22 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class CommonUtils {
-    private static final String TAG = "CommonUtils";
+    private static final String TAG = "CommonUtils : ";
 
     public static void copyAssetsDirToSDCard(Context context, String assetsDirName, String sdCardPath) {
-        Log.d(TAG, "copyAssetsDirToSDCard() called with: context = [" + context + "], assetsDirName = [" + assetsDirName + "], sdCardPath = [" + sdCardPath + "]");
+        Log.d(TAG, "copyAssetsDirToSDCard: ");
+        Log.i(TAG, "    called with: context = [" + context + "], assetsDirName = [" + assetsDirName + "], sdCardPath = [" + sdCardPath + "]");
         try {
-            String list[] = context.getAssets().list(assetsDirName);
+            String[] list = context.getAssets().list(assetsDirName);
             if (list.length == 0) {
                 InputStream inputStream = context.getAssets().open(assetsDirName);
-                byte[] mByte = new byte[1024];
-                int bt = 0;
-                File file = new File(sdCardPath + File.separator
-                        + assetsDirName.substring(assetsDirName.lastIndexOf('/')));
+                byte[]      mByte       = new byte[1024];
+                int         bt          = 0;
+                File        file        = new File(sdCardPath + File.separator + assetsDirName.substring(assetsDirName.lastIndexOf('/')));
                 if (!file.exists()) {
-                    file.createNewFile();
+
+                    boolean resultCreateNewFile = file.createNewFile();
+                    Log.d(TAG, "copyAssetsDirToSDCard: resultCreateNewFile : " + resultCreateNewFile);
                 } else {
                     return;
                 }
@@ -39,14 +41,17 @@ public class CommonUtils {
                 }
                 sdCardPath = sdCardPath + File.separator + subDirName;
                 File file = new File(sdCardPath);
-                if (!file.exists())
-                    file.mkdirs();
+
+                if (!file.exists()) {
+                    boolean mkdirsResult = file.mkdirs();
+                    Log.d(TAG, "    : mkdirsResult : " + mkdirsResult);
+                }
                 for (String s : list) {
                     copyAssetsDirToSDCard(context, assetsDirName + File.separator + s, sdCardPath);
                 }
             }
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
+            Log.e(TAG, "    Exception : " + e.getLocalizedMessage());
             e.printStackTrace();
         }
     }

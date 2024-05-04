@@ -27,6 +27,8 @@ import com.better.year.R;
 import com.better.year.media.FFMediaPlayer;
 import com.better.year.media.MySurfaceView;
 
+import java.io.File;
+
 public class NativeMediaPlayerActivity extends AppCompatActivity {
     private static final String        TAG                     = "NativeMediaPlayerActivity";
     private static final String[]      REQUEST_PERMISSIONS     = {Manifest.permission.WRITE_EXTERNAL_STORAGE,};
@@ -35,16 +37,16 @@ public class NativeMediaPlayerActivity extends AppCompatActivity {
     private              FFMediaPlayer mMediaPlayer            = null;
     private              SeekBar       mSeekBar                = null;
     private              boolean       mIsTouch                = false;
-    private              String        mVideoPath              = Environment.getExternalStorageDirectory().getAbsolutePath() + "/byteflow/one_piece.mp4";
+    private              String        mVideoPath              = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_native_media_player);
-
+        File sdCard = getFilesDir();
+        mVideoPath = sdCard.getAbsolutePath() + "/betteryear/one_piece.mp4";
         mSurfaceView = findViewById(R.id.surface_view);
         addSurfaceViewHolderCallback();
-
         mSeekBar = findViewById(R.id.seek_bar);
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
