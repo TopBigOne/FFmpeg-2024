@@ -90,7 +90,7 @@ public:
 
 protected:
     void *m_MsgContext = nullptr;
-    MessageCallback m_MessageCallback = nullptr;
+    MessageCallback m_MsgCallback = nullptr;
 
 protected:
     virtual int Init(const char *url, AVMediaType mediaType);
@@ -154,7 +154,7 @@ private:
     AVCodec *m_AVCodec = nullptr;
     AVPacket *m_AVPacket = nullptr;
     AVFrame *m_AVFrame = nullptr;
-    AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
+     AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
 
     // 文件地址
     char m_Url[MAX_PATH] = {0};

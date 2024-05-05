@@ -38,7 +38,20 @@ private:
 
     virtual void OnFrameAvailable(AVFrame *frame);
 
+    /**
+     * 像素类型
+     */
+    const AVPixelFormat DST_PIXEL_FORMAT = AV_PIX_FMT_RGBA;
 
+    int m_VideoWidth = 0;
+    int m_VideoHeight = 0;
+
+    int m_RenderWidth = 0;
+    int m_RenderHeight = 0;
+    AVFrame *m_RGBAFrame = nullptr;
+    uint8_t *m_FrameBuffer = nullptr;
+
+    // todo 视频渲染
 
 
 

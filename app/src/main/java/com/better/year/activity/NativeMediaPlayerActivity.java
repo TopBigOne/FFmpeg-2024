@@ -44,6 +44,7 @@ public class NativeMediaPlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_native_media_player);
         File sdCard = getFilesDir();
+
         mVideoPath = sdCard.getAbsolutePath() + "/betteryear/one_piece.mp4";
         mSurfaceView = findViewById(R.id.surface_view);
         addSurfaceViewHolderCallback();
