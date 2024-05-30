@@ -70,23 +70,28 @@ public:
 
     virtual float GetCurrentPosition();
 
-    virtual void ClearCache();
+    virtual void ClearCache(){};
 
     /**
      * 事件回调
      * @param context
      * @param callback
      */
-    virtual void SetMessageCallback(void *context, MessageCallback callback);
+    virtual void SetMessageCallback(void *context, MessageCallback callback) {
+        m_MsgContext = context;
+        m_MsgCallback = callback;
+    }
 
     /**
      * 设置音频和视频同步回调
      * @param context
      * @param callback
      */
-    virtual void SetAVSyncCallback(void *context, AVSyncCallback callback) {
-        // todo
+    virtual void SetAVSyncCallback(void *context, AVSyncCallback callback)   {
+        m_AVDecoderContext = context;
+        m_AVSyncCallback = callback;
     }
+
 
 protected:
     void *m_MsgContext = nullptr;
@@ -149,11 +154,11 @@ private:
 
 
 private:
-    AVFormatContext *m_AVformatContext = nullptr;
+    AVFormatContext *m_AVFormatContext = nullptr;
     AVCodecContext *m_AVCodecContext = nullptr;
     AVCodec *m_AVCodec = nullptr;
-    AVPacket *m_AVPacket = nullptr;
-    AVFrame *m_AVFrame = nullptr;
+    AVPacket *m_Packet = nullptr;
+    AVFrame *m_Frame = nullptr;
      AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
 
     // 文件地址
@@ -179,6 +184,7 @@ private:
     // Seek AV result
     volatile bool m_SeekSuccess = false;
     AVSyncCallback m_AVSyncCallback = nullptr;
+    void* m_AVDecoderContext = nullptr;
 
 
 };

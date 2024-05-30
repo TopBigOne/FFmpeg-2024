@@ -4,14 +4,20 @@
 
 #include "FFMediaPlayer.h"
 
-void FFMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int renderType, jobject surface) {
+#include "NativeRender.h"
+
+void
+FFMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int videoRenderType, jobject surface) {
     jniEnv->GetJavaVM(&m_JavaVM);
     m_JavaObj = jniEnv->NewGlobalRef(obj);
     // 视频解码器
     m_VideoDecoder = new VideoDecoder(url);
     // 音频解码器
 
-
+    if (videoRenderType == VIDEO_RENDER_ANWINDOW) {
+        m_VideoRender = new NativeRender(jniEnv, surface);
+        m_VideoDecoder->SetVideoRender(m_VideoRender);
+    }
 
 
 }

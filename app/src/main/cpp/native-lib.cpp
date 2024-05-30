@@ -150,6 +150,7 @@ native_GetMediaParams(JNIEnv *env, jobject thiz,
                       jint param_type) {
     LOGCATD(__func__)
     // TODO: implement native_GetMediaParams()
+    return 0;
 }
 
 void
