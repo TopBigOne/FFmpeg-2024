@@ -149,8 +149,13 @@ native_GetMediaParams(JNIEnv *env, jobject thiz,
                       jlong player_handle,
                       jint param_type) {
     LOGCATD(__func__)
-    // TODO: implement native_GetMediaParams()
-    return 0;
+    long value = 0;
+    if(player_handle != 0)
+    {
+        PlayerWrapper *ffMediaPlayer = reinterpret_cast<PlayerWrapper *>(player_handle);
+        value = ffMediaPlayer->GetMediaParams(param_type);
+    }
+    return value;
 }
 
 void

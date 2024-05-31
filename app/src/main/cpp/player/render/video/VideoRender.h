@@ -18,7 +18,7 @@ public:
 
     virtual ~VideoRender(){}
 
-    virtual void Init(int videoHeight, int videoWidth, int *dstSize) = 0;
+    virtual void Init(int  videoWidth , int videoHeight, int *dstSize) = 0;
 
     /**
      * 开始绘制画面

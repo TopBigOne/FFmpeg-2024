@@ -19,7 +19,7 @@ FFMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int videoRenderType,
         m_VideoDecoder->SetVideoRender(m_VideoRender);
     }
 
-
+    m_VideoDecoder->SetMessageCallback(this, PostMessage);
 }
 
 void FFMediaPlayer::Play() {
@@ -44,7 +44,23 @@ void FFMediaPlayer::SeekToPosition(float position) {
 }
 
 long FFMediaPlayer::GetMediaParams(int paramType) {
-    return 0;
+    LOGCATD(__FUNCTION__)
+    LOGCATD("   paramType=%d", paramType)
+    long value = 0;
+    switch (paramType) {
+        case MEDIA_PARAM_VIDEO_WIDTH:
+            value = m_VideoDecoder != nullptr ? m_VideoDecoder->GetVideoWidth() : 0;
+            break;
+        case MEDIA_PARAM_VIDEO_HEIGHT:
+            value = m_VideoDecoder != nullptr ? m_VideoDecoder->GetVideoHeight() : 0;
+            break;
+        case MEDIA_PARAM_VIDEO_DURATION:
+            value = m_VideoDecoder != nullptr ? m_VideoDecoder->GetDuration() : 0;
+            break;
+        default:
+            value = 0;
+    }
+    return value;
 }
 
 void FFMediaPlayer::UnInit() {
@@ -52,17 +68,50 @@ void FFMediaPlayer::UnInit() {
 }
 
 JNIEnv *FFMediaPlayer::GetJNIEnv(bool *isAttach) {
-    return nullptr;
+    JNIEnv *env;
+    int status;
+    if (nullptr == m_JavaVM) {
+        LOGCATE("FFMediaPlayer::GetJNIEnv m_JavaVM == nullptr");
+        return nullptr;
+    }
+    *isAttach = false;
+    status = m_JavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if (status != JNI_OK) {
+        status = m_JavaVM->AttachCurrentThread(&env, nullptr);
+        if (status != JNI_OK) {
+            LOGCATE("FFMediaPlayer::GetJNIEnv failed to attach current thread");
+            return nullptr;
+        }
+        *isAttach = true;
+    }
+    return env;
 }
 
 jobject FFMediaPlayer::GetJavaObj() {
-    return nullptr;
+    return m_JavaObj;
 }
 
 JavaVM *FFMediaPlayer::GetJavaVM() {
-    return nullptr;
+    return m_JavaVM;
 }
 
 void FFMediaPlayer::PostMessage(void *context, int msgType, float msgCode) {
+    if (context == nullptr) {
+        return;
+    }
+    auto *player = static_cast<FFMediaPlayer *>(context);
+    bool isAttach = false;
+    JNIEnv *env = player->GetJNIEnv(&isAttach);
+    if (env == nullptr) {
+        return;
+    }
+    jobject javaObj = player->GetJavaObj();
+    jmethodID mid = env->GetMethodID(env->GetObjectClass(javaObj),
+                                     JAVA_PLAYER_EVENT_CALLBACK_API_NAME, "(IF)V");
+    env->CallVoidMethod(javaObj, mid, msgType, msgCode);
+    if (isAttach) {
+        player->GetJavaVM()->DetachCurrentThread();
+    }
+
 
 }

@@ -11,15 +11,17 @@ void VideoDecoder::OnDecoderReady() {
     // case 1:
     if (m_MsgContext && m_MsgCallback) {
         m_MsgCallback(m_MsgContext, MSG_DECODER_READY, 0);
+    } else{
+        LOGCATE("  m_MsgContext or m_MsgCallback is NULL.");
     }
     // case 2:
     if (m_VideoRender == nullptr) {
-        LOGCATE("   m_VideoRender == null");
+        LOGCATE("   m_VideoRender == NULL");
         return;
     }
     // case 3:
     int dstSize[2] = {0};
-    m_VideoRender->Init(m_VideoHeight, m_VideoWidth, dstSize);
+    m_VideoRender->Init(m_VideoWidth, m_VideoHeight, dstSize);
     m_RenderWidth = dstSize[0];
     m_RenderHeight = dstSize[1];
     // 使用原生渲染

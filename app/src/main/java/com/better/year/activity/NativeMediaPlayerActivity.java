@@ -163,8 +163,12 @@ public class NativeMediaPlayerActivity extends AppCompatActivity {
     }
 
     private void onDecoderReady() {
+        Log.d(TAG, "onDecoderReady: ");
         int videoWidth  = (int) mMediaPlayer.getMediaParams(MEDIA_PARAM_VIDEO_WIDTH);
         int videoHeight = (int) mMediaPlayer.getMediaParams(MEDIA_PARAM_VIDEO_HEIGHT);
+        Log.i(TAG, "    videoWidth  : " + videoWidth);
+        Log.i(TAG, "    videoHeight : " + videoHeight);
+
         if (videoHeight * videoWidth != 0) mSurfaceView.setAspectRatio(videoWidth, videoHeight);
 
         int duration = (int) mMediaPlayer.getMediaParams(MEDIA_PARAM_VIDEO_DURATION);

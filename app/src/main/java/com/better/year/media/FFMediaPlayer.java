@@ -82,6 +82,16 @@ public class FFMediaPlayer {
         native_SeekToPosition(mNativePlayerHandle, position);
     }
 
+    /**
+     * C++ invoke it.
+     * @param msgType
+     * @param msgValue
+     */
+    private void playerEventCallback(int msgType, float msgValue) {
+        if(mEventCallback != null)
+            mEventCallback.onPlayerEvent(msgType, msgValue);
+
+    }
 
 
 

@@ -56,6 +56,10 @@ void PlayerWrapper::SeekToPosition(float position) {
 }
 
 long PlayerWrapper::GetMediaParams(int paramType) {
+    if(m_MediaPlayer) {
+        return m_MediaPlayer->GetMediaParams(paramType);
+    }
+
     return 0;
 }
 
