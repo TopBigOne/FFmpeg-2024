@@ -47,7 +47,8 @@ float DecoderBase::GetCurrentPosition() {
 
 
 int DecoderBase::Init(const char *url, AVMediaType mediaType) {
-    LOGCATD("DecoderBase::Init url : %s, mediaType : %d", url, mediaType);
+    LOGCATD(__FUNCTION__)
+    LOGCATI("   url : %s, mediaType : %d", url, mediaType);
     strcpy(m_Url, url);
     m_MediaType = mediaType;
     return 0;
@@ -144,6 +145,28 @@ int DecoderBase::InitFFDecoder() {
 
 void DecoderBase::UnInitDecoder() {
     LOGCATD(__FUNCTION__)
+    if (m_Frame != nullptr) {
+        av_frame_free(&m_Frame);
+        m_Frame = nullptr;
+    }
+
+    if (m_Packet != nullptr) {
+        av_packet_free(&m_Packet);
+        m_Packet = nullptr;
+    }
+
+    if (m_AVCodecContext != nullptr) {
+        avcodec_close(m_AVCodecContext);
+        avcodec_free_context(&m_AVCodecContext);
+        m_AVCodecContext = nullptr;
+        m_AVCodec        = nullptr;
+    }
+
+    if (m_AVFormatContext != nullptr) {
+        avformat_close_input(&m_AVFormatContext);
+        avformat_free_context(m_AVFormatContext);
+        m_AVFormatContext = nullptr;
+    }
 
 }
 
@@ -202,7 +225,7 @@ int DecoderBase::DecodeOnePacket() {
     LOGCATI("   av_read_frame result : %d", result)
     while (result == 0) {
         if (m_Packet->stream_index == m_StreamIndex) {
-            LOGCATI("   流index匹配  🌹🌹🌹🌹🌹🌹")
+            LOGCATI("       流index匹配  🌹🌹🌹🌹🌹🌹")
 
             // case 2-1: EOF
             if (avcodec_send_packet(m_AVCodecContext, m_Packet) == AVERROR_EOF) {
@@ -221,9 +244,11 @@ int DecoderBase::DecodeOnePacket() {
                 // AV Sync
                 AVSync();
                 // 渲染
-                LOGCATV("   DecodeOnePacket 000 m_MediaType=%d", m_MediaType)
+
+                LOGCATI("       case 2-2")
+                LOGCATI("       m_MediaType=%d", m_MediaType)
+
                 OnFrameAvailable(m_Frame);
-                LOGCATV("   DecodeOnePacket 000 m_MediaType=%d", m_MediaType)
 
                 if (avcodec_receive_frame_result < 0) {
                     char errbuf[AV_ERROR_MAX_STRING_SIZE] = {0};
@@ -235,10 +260,6 @@ int DecoderBase::DecodeOnePacket() {
                 }
                 frameCount++;
             }
-
-
-
-
 
             // todo 判断一个AVPacket 是否解码完成，我认为不合理；应该使用 result== AVERROR_EOF
             if (frameCount > 0) {
@@ -263,11 +284,44 @@ int DecoderBase::DecodeOnePacket() {
 
 void DecoderBase::UpdateTimeStamp() {
     LOGCATD(__FUNCTION__)
+    std::unique_lock<std::mutex> lock(m_Mutex);
+    if (m_Frame->pkt_dts != AV_NOPTS_VALUE) {
+        m_CurTimeStamp = m_Frame->pkt_dts;
+    } else if (m_Frame->pts != AV_NOPTS_VALUE) {
+        m_CurTimeStamp = m_Frame->pts;
+    } else {
+        m_CurTimeStamp = 0;
+    }
+
+    m_CurTimeStamp = (int64_t) (
+            (m_CurTimeStamp * av_q2d(m_AVFormatContext->streams[m_StreamIndex]->time_base)) * 1000
+    );
+
+    if (m_SeekPosition > 0 && m_SeekSuccess) {
+        m_StartTimeStamp = GetSysCurrentTime() - m_CurTimeStamp;
+        m_SeekPosition   = 0;
+        m_SeekSuccess    = false;
+    }
 
 }
 
 long DecoderBase::AVSync() {
-    return 0;
+    LOGCATD(__FUNCTION__)
+    long curSysTime = GetSysCurrentTime();
+    long elapsedTime = curSysTime - m_StartTimeStamp;
+    if (m_MsgContext && m_MsgCallback && m_MediaType == AVMEDIA_TYPE_AUDIO) {
+        m_MsgCallback(m_MsgContext, MSG_DECODING_TIME, m_CurTimeStamp * 1.0f / 1000);
+    }
+    long delay = 0;
+    if (m_CurTimeStamp > elapsedTime) {
+        // sleep time
+        auto sleepTime = static_cast<unsigned int >(m_CurTimeStamp - elapsedTime);
+        sleepTime = sleepTime > DELAY_THRESHOLD ? DELAY_THRESHOLD : sleepTime;
+        av_usleep(sleepTime * 1000);
+    }
+    delay = elapsedTime - m_CurTimeStamp;
+
+    return delay;
 }
 
 

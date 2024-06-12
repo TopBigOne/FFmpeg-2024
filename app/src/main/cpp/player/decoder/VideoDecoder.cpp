@@ -50,6 +50,7 @@ void VideoDecoder::OnDecoderDone() {
 
 void VideoDecoder::OnFrameAvailable(AVFrame *frame) {
     LOGCATD(__FUNCTION__)
+    LOGCATI(" a video frame is Available")
     if (m_VideoRender == nullptr || frame == nullptr) {
         LOGCATE("   m_VideoRender  or frame is NULL")
         return;

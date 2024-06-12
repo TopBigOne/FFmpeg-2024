@@ -5,6 +5,8 @@
 #include "FFMediaPlayer.h"
 
 #include "NativeRender.h"
+#include "OpenSLRender.h"
+
 
 void
 FFMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int videoRenderType, jobject surface) {
@@ -13,11 +15,15 @@ FFMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int videoRenderType,
     // 视频解码器
     m_VideoDecoder = new VideoDecoder(url);
     // 音频解码器
+    m_AudioDecoder = new AudioDecoder(url);
 
     if (videoRenderType == VIDEO_RENDER_ANWINDOW) {
         m_VideoRender = new NativeRender(jniEnv, surface);
         m_VideoDecoder->SetVideoRender(m_VideoRender);
     }
+
+    m_AudioRender = new OpenSLRender();
+    m_AudioDecoder->SetAudioRender(m_AudioRender);
 
     m_VideoDecoder->SetMessageCallback(this, PostMessage);
 }
@@ -27,8 +33,9 @@ void FFMediaPlayer::Play() {
     if (m_VideoDecoder) {
         m_VideoDecoder->Start();
     }
-
-
+    if (m_AudioDecoder) {
+        m_AudioDecoder->Start();
+    }
 }
 
 void FFMediaPlayer::Pause() {

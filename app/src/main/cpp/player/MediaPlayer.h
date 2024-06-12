@@ -12,7 +12,7 @@
 
 #include "decoder/VideoDecoder.h"
 #include "decoder/AudioDecoder.h"
-//#include "render/audio/AudioRender.h"
+#include "render/audio/AudioRender.h"
 
 
 #define JAVA_PLAYER_EVENT_CALLBACK_API_NAME "playerEventCallback"

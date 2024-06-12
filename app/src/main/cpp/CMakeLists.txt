@@ -7,6 +7,9 @@ set(JNI_LIBS ${CMAKE_SOURCE_DIR}/../jniLibs)
 project(${libname})
 
 
+message(WARNING "JNI_LIBS: ${CMAKE_SOURCE_DIR}")
+
+
 include_directories(
         include
         glm

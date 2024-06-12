@@ -42,6 +42,7 @@ private:
     AudioDecoder *m_AudioDecoder = nullptr;
 
     VideoRender *m_VideoRender = nullptr;
+    AudioRender *m_AudioRender = nullptr;
     // todo 音频渲染
 
 };
