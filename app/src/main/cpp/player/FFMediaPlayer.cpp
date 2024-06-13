@@ -22,6 +22,7 @@ FFMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int videoRenderType,
         m_VideoDecoder->SetVideoRender(m_VideoRender);
     }
 
+    // 使用open sl es  渲染音频
     m_AudioRender = new OpenSLRender();
     m_AudioDecoder->SetAudioRender(m_AudioRender);
 

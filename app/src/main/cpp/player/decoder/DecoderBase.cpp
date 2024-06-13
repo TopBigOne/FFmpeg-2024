@@ -48,7 +48,7 @@ float DecoderBase::GetCurrentPosition() {
 
 int DecoderBase::Init(const char *url, AVMediaType mediaType) {
     LOGCATD(__FUNCTION__)
-    LOGCATI("   url : %s, mediaType : %d", url, mediaType);
+    LOGCATI("   url : %s, mediaType : %d", url, mediaType)
     strcpy(m_Url, url);
     m_MediaType = mediaType;
     return 0;
@@ -159,7 +159,7 @@ void DecoderBase::UnInitDecoder() {
         avcodec_close(m_AVCodecContext);
         avcodec_free_context(&m_AVCodecContext);
         m_AVCodecContext = nullptr;
-        m_AVCodec        = nullptr;
+        m_AVCodec = nullptr;
     }
 
     if (m_AVFormatContext != nullptr) {
@@ -177,6 +177,7 @@ void DecoderBase::StartDecodingThread() {
 
 void DecoderBase::DecodingLoop() {
     LOGCATD(__FUNCTION__)
+    LOGCATI("    DecodingLoop m_MediaType : %d", m_MediaType)
     {
         std::unique_lock<std::mutex> lock(m_Mutex);
         m_DecoderState = STATE_DECODING;
@@ -185,10 +186,11 @@ void DecoderBase::DecodingLoop() {
     for (;;) {
         // case 1:解码暂停10毫秒，便于渲染线程消费avframe数据
         while (m_DecoderState == STATE_PAUSE) {
+            LOGCATI("   case 1 : pause.")
             std::unique_lock<std::mutex> lock(m_Mutex);
             m_Cond.wait_for(lock, std::chrono::milliseconds(10));
             m_StartTimeStamp = GetSysCurrentTime() - m_CurTimeStamp;
-            LOGCATI("   case 1 : pause.")
+
         }
         // case 2:
         if (m_DecoderState == STATE_STOP) {
@@ -221,12 +223,9 @@ int DecoderBase::DecodeOnePacket() {
     // case 1: seek AV file.
     // case 2: real decode the AV file.
     int result = av_read_frame(m_AVFormatContext, m_Packet);
-
-    LOGCATI("   av_read_frame result : %d", result)
+    LOGCATI("  step 1 av_read_frame result : %d", result)
     while (result == 0) {
         if (m_Packet->stream_index == m_StreamIndex) {
-            LOGCATI("       流index匹配  🌹🌹🌹🌹🌹🌹")
-
             // case 2-1: EOF
             if (avcodec_send_packet(m_AVCodecContext, m_Packet) == AVERROR_EOF) {
                 result = -1;
@@ -234,48 +233,27 @@ int DecoderBase::DecodeOnePacket() {
             }
             // case 2-2:
             int frameCount = 0;
-
-            int avcodec_receive_frame_result;
-            while ((avcodec_receive_frame_result = avcodec_receive_frame(m_AVCodecContext,
-                                                                         m_Frame)) == 0) {
-                LOGCATI("       case 2-2")
+            while (avcodec_receive_frame(m_AVCodecContext, m_Frame) == 0) {
                 // 更新时间戳
                 UpdateTimeStamp();
                 // AV Sync
                 AVSync();
                 // 渲染
-
-                LOGCATI("       case 2-2")
                 LOGCATI("       m_MediaType=%d", m_MediaType)
-
                 OnFrameAvailable(m_Frame);
-
-                if (avcodec_receive_frame_result < 0) {
-                    char errbuf[AV_ERROR_MAX_STRING_SIZE] = {0};
-                    av_strerror(avcodec_receive_frame_result, errbuf, AV_ERROR_MAX_STRING_SIZE);
-                    LOGCATE("       avcodec_receive_frame result : %d",
-                            avcodec_receive_frame_result)
-                    LOGCATE("       avcodec_receive_frame fail   : %s", errbuf)
-
-                }
                 frameCount++;
             }
 
-            // todo 判断一个AVPacket 是否解码完成，我认为不合理；应该使用 result== AVERROR_EOF
             if (frameCount > 0) {
                 result = 0;
-                LOGCATI("       case 2-3 ： 解码一个AVPacket 结束")
                 goto __EXIT;
             }
 
-        } else {
-            LOGCATI("   流index不匹配 ⚠️⚠️⚠️⚠️⚠️⚠️")
         }
         // 复用AVPacket
         av_packet_unref(m_Packet);
         result = av_read_frame(m_AVFormatContext, m_Packet);
-        LOGCATI("   av_read_frame result : %d", result)
-
+        LOGCATI("  step 2 av_read_frame result : %d", result)
     }
     __EXIT:
     av_packet_unref(m_Packet);
@@ -299,8 +277,8 @@ void DecoderBase::UpdateTimeStamp() {
 
     if (m_SeekPosition > 0 && m_SeekSuccess) {
         m_StartTimeStamp = GetSysCurrentTime() - m_CurTimeStamp;
-        m_SeekPosition   = 0;
-        m_SeekSuccess    = false;
+        m_SeekPosition = 0;
+        m_SeekSuccess = false;
     }
 
 }
@@ -336,21 +314,12 @@ void DecoderBase::DoAVDecoding(DecoderBase *decoder) {
         LOGCATI("   InitFFDecoder OK")
         // step 2:
         decoder->OnDecoderReady();
-
-        if (decoder->m_MediaType == AVMEDIA_TYPE_VIDEO) {
-            LOGCATI("   OnDecoderReady width  : %d", decoder->m_AVCodecContext->width)
-            LOGCATI("   OnDecoderReady height : %d", decoder->m_AVCodecContext->height)
-        }
-
-
-        LOGCATI("   OnDecoderReady OK")
-
         // step 3:
         decoder->DecodingLoop();
-        LOGCATI("   DecodingLoop OK")
     } while (false);
     decoder->UnInitDecoder();
     decoder->OnDecoderDone();
+    // Guangyazhou1234
 }
 
 

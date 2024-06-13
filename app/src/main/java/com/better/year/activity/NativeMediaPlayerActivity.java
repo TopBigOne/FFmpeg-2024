@@ -110,8 +110,7 @@ public class NativeMediaPlayerActivity extends AppCompatActivity {
     }
 
     private void processPlayerEvent(int msgType, float msgValue) {
-
-        Log.d(TAG, "onPlayerEvent() called with: msgType = [" + msgType + "], msgValue = [" + msgValue + "]");
+        //  Log.d(TAG, "onPlayerEvent() called with: msgType = [" + msgType + "], msgValue = [" + msgValue + "]");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -164,6 +163,9 @@ public class NativeMediaPlayerActivity extends AppCompatActivity {
 
     private void onDecoderReady() {
         Log.d(TAG, "onDecoderReady: ");
+        if (mMediaPlayer == null) {
+            Log.e(TAG, "    mMediaPlayer is null.");
+        }
         int videoWidth  = (int) mMediaPlayer.getMediaParams(MEDIA_PARAM_VIDEO_WIDTH);
         int videoHeight = (int) mMediaPlayer.getMediaParams(MEDIA_PARAM_VIDEO_HEIGHT);
         Log.i(TAG, "    videoWidth  : " + videoWidth);

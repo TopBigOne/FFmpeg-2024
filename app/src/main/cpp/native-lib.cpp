@@ -134,14 +134,23 @@ void
 native_Stop(JNIEnv *env, jobject thiz,
             jlong player_handle) {
     LOGCATD(__func__)
-    // TODO: implement native_Stop()
+    if(player_handle != 0)
+    {
+        PlayerWrapper *ffMediaPlayer = reinterpret_cast<PlayerWrapper *>(player_handle);
+        ffMediaPlayer->Stop();
+    }
 }
 
 void
 native_UnInit(JNIEnv *env, jobject thiz,
               jlong player_handle) {
     LOGCATD(__func__)
-    // TODO: implement native_UnInit()
+    if(player_handle != 0)
+    {
+        PlayerWrapper *ffMediaPlayer = reinterpret_cast<PlayerWrapper *>(player_handle);
+        ffMediaPlayer->UnInit();
+        delete ffMediaPlayer;
+    }
 }
 
 jlong
@@ -164,6 +173,12 @@ native_SetMediaParams(JNIEnv *env, jobject thiz,
                       jint param_type, jobject param) {
     LOGCATD(__func__)
     // TODO: implement native_SetMediaParams()
+    if(player_handle!=0){
+        auto  *ffMediaPlayer = reinterpret_cast<PlayerWrapper *>(player_handle);
+        ffMediaPlayer->SetMediaParams(param_type,param);
+
+        
+    }
 }
 
 void

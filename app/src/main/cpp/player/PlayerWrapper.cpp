@@ -30,6 +30,11 @@ void PlayerWrapper::Init(JNIEnv *jniEnv, jobject obj, char *url, int playerType,
 }
 
 void PlayerWrapper::UnInit() {
+    if(m_MediaPlayer) {
+        m_MediaPlayer->UnInit();
+        delete m_MediaPlayer;
+        m_MediaPlayer = nullptr;
+    }
 
 }
 
@@ -39,15 +44,19 @@ void PlayerWrapper::Play() {
         return;
     }
     LOGCATE("   m_MediaPlayer is NULL.")
-
-
 }
 
 void PlayerWrapper::Pause() {
+    if(m_MediaPlayer) {
+        m_MediaPlayer->Pause();
+    }
 
 }
 
 void PlayerWrapper::Stop() {
+    if(m_MediaPlayer) {
+        m_MediaPlayer->Stop();
+    }
 
 }
 
@@ -64,5 +73,9 @@ long PlayerWrapper::GetMediaParams(int paramType) {
 }
 
 void PlayerWrapper::SetMediaParams(int paramType, jobject obj) {
+    if (m_MediaPlayer){
+        m_MediaPlayer->SetMediaParams(paramType,obj);
+
+    }
 
 }

@@ -32,26 +32,30 @@ void AudioDecoder::OnDecoderReady() {
 
 
     // 重采样
-    m_nbSamples = (int) av_rescale_rnd(ACC_NB_SAMPLES, AUDIO_DST_SAMPLE_RATE, codeCtx->sample_rate,AV_ROUND_UP);
-    m_DstFrameDataSize = av_samples_get_buffer_size(nullptr, AUDIO_DST_CHANNEL_COUNTS, m_nbSamples,
-                                                    DST_SAMPLE_FORMAT, 1);
-    m_AudioOutBuffer = (uint8_t *) malloc(m_DstFrameDataSize);
+    m_nbSamples = (int) av_rescale_rnd(ACC_NB_SAMPLES, AUDIO_DST_SAMPLE_RATE, codeCtx->sample_rate,
+                                       AV_ROUND_UP);
+    m_DstFrameDataSze = av_samples_get_buffer_size(nullptr, AUDIO_DST_CHANNEL_COUNTS, m_nbSamples,
+                                                   DST_SAMPLE_FORMAT, 1);
+    m_AudioOutBuffer = (uint8_t *) malloc(m_DstFrameDataSze);
+
+    LOGCATI("   m_DstFrameDataSze ： %d", m_DstFrameDataSze)
+    LOGCATI("   m_AudioOutBuffer  ： %p", m_AudioOutBuffer)
     m_AudioRender->Init();
 }
 
 
 void AudioDecoder::OnFrameAvailable(AVFrame *frame) {
     LOGCATD(__FUNCTION__)
-    LOGCATI("   a audio frame is Available")
     if (m_AudioRender == nullptr) {
         LOGCATE("   m_AudioRender == null")
         return;
     }
-    int result = swr_convert(m_SwrContext, &m_AudioOutBuffer, m_DstFrameDataSize / 2,(const uint8_t **) frame->data, frame->nb_samples);
 
+    LOGCATE("   AudioDecoder::OnFrameAvailable frame=%p, frame->nb_samples=%d", frame, frame->nb_samples);
+    int result = swr_convert(m_SwrContext, &m_AudioOutBuffer, m_DstFrameDataSze / 2, (const uint8_t **) frame->data, frame->nb_samples);
     if (result > 0) {
-        LOGCATI("   start render audio frame")
-        m_AudioRender->RenderAudioFrame(m_AudioOutBuffer, m_DstFrameDataSize);
+        LOGCATI("   start Render Audio Frame")
+        m_AudioRender->RenderAudioFrame(m_AudioOutBuffer, m_DstFrameDataSze);
     }
 
 }

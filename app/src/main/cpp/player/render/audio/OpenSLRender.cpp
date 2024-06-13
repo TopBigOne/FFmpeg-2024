@@ -100,7 +100,8 @@ int OpenSLRender::CreateOutputMixer() {
 
 int OpenSLRender::CreateAudioPlayer() {
     LOGCATD(__FUNCTION__)
-    SLDataLocator_AndroidSimpleBufferQueue android_queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
+    SLDataLocator_AndroidSimpleBufferQueue android_queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
+                                                            2};
     SLDataFormat_PCM pcm = {
             SL_DATAFORMAT_PCM,
             (SLuint32) 2,
@@ -131,14 +132,15 @@ int OpenSLRender::CreateAudioPlayer() {
             break;
         }
 
-        result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_PLAY,&m_AudioPlayerPlay);
+        result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_PLAY,
+                                                   &m_AudioPlayerPlay);
         if (result != SL_RESULT_SUCCESS) {
             LOGCATE("OpenSLRender::CreateAudioPlayer GetInterface fail. result=%d", result)
             break;
         }
-        result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_BUFFERQUEUE, &m_BufferQueue);
-        if(result != SL_RESULT_SUCCESS)
-        {
+        result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_BUFFERQUEUE,
+                                                   &m_BufferQueue);
+        if (result != SL_RESULT_SUCCESS) {
             LOGCATE("OpenSLRender::CreateAudioPlayer GetInterface fail. result=%d", result);
             break;
         }
@@ -170,7 +172,7 @@ void OpenSLRender::CreateSLWaitingThread(OpenSLRender *openSlRender) {
 
 void
 OpenSLRender::AudioPlayerCallback(SLAndroidSimpleBufferQueueItf bufferQueueItf, void *context) {
-    auto *openSLRender = static_cast<OpenSLRender *>(context);
+    OpenSLRender *openSLRender = static_cast<OpenSLRender *>(context);
     openSLRender->HandleAudioFrameQueue();
 }
 
@@ -193,6 +195,8 @@ void OpenSLRender::HandleAudioFrameQueue() {
                                                      (SLuint32) audioFrame->dataSize);
         if (lresult == SL_RESULT_SUCCESS) {
             m_AudioFrameQueue.pop();
+            // 销毁AudioFrame
+            LOGCATI("    销毁AudioFrame audioFrame ptr is : %p", audioFrame->data)
             delete audioFrame;
         }
     }
@@ -213,7 +217,7 @@ void OpenSLRender::StartRender() {
 }
 
 int OpenSLRender::GetAudioFrameQueueSize() {
-    LOGCATD(__FUNCTION__)
+    //  LOGCATD(__FUNCTION__)
     std::unique_lock<std::mutex> lock(m_Mutex);
     return static_cast<int>(m_AudioFrameQueue.size());
 }
@@ -221,6 +225,7 @@ int OpenSLRender::GetAudioFrameQueueSize() {
 
 void OpenSLRender::RenderAudioFrame(uint8_t *pData, int dataSize) {
     LOGCATD(__FUNCTION__)
+    LOGCATI("   audio data ptr : %p", pData)
     if (m_AudioPlayerPlay == nullptr) {
         LOGCATE("   m_AudioPlayerPlay is NULL.")
         return;

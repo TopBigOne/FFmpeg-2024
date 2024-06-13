@@ -11,17 +11,21 @@
 
 class AudioFrame {
 public:
-    AudioFrame(uint8_t *data, int dataSize, bool hardCopy = false) {
+    AudioFrame(uint8_t *data, int dataSize, bool hardCopy = true) {
         this->data = data;
         this->dataSize = dataSize;
         this->hardCopy = hardCopy;
+        if(hardCopy) {
+            this->data = static_cast<uint8_t *>(malloc(this->dataSize));
+            memcpy(this->data, data, dataSize);
+        }
     }
 
     ~AudioFrame() {
-        if (hardCopy && this->hardCopy) {
-            this->data = nullptr;
+        if (hardCopy && this->data) {
+            free(this->data);
         }
-        free(this->data);
+        this->data = nullptr;
     }
 
 public:

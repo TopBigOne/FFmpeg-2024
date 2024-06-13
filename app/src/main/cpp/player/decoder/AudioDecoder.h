@@ -20,7 +20,7 @@ static const int AUDIO_DST_SAMPLE_RATE = 44100;
 static const int AUDIO_DST_CHANNEL_COUNTS = 2;
 static const uint64_t AUDIO_DST_CHANNEL_LAYOUT = AV_CH_LAYOUT_STEREO;
 static const int AUDIO_DST_BIT_RATE = 64000;
-static const int ACC_NB_SAMPLES = 64000;
+static const int ACC_NB_SAMPLES = 1024;
 
 
 class AudioDecoder : public DecoderBase {
@@ -55,7 +55,7 @@ private:
     uint8_t *m_AudioOutBuffer = nullptr;
 
     int m_nbSamples = 0;
-    int m_DstFrameDataSize = 0;
+    int m_DstFrameDataSze = 0;
 
 
 };

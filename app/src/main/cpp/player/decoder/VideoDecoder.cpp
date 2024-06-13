@@ -45,6 +45,26 @@ void VideoDecoder::OnDecoderReady() {
 
 void VideoDecoder::OnDecoderDone() {
     LOGCATD(__FUNCTION__)
+    if (m_MsgContext && m_MsgCallback)
+        m_MsgCallback(m_MsgContext, MSG_DECODER_DONE, 0);
+
+    if (m_VideoRender)
+        m_VideoRender->UnInit();
+
+    if (m_RGBAFrame != nullptr) {
+        av_frame_free(&m_RGBAFrame);
+        m_RGBAFrame = nullptr;
+    }
+
+    if (m_FrameBuffer != nullptr) {
+        free(m_FrameBuffer);
+        m_FrameBuffer = nullptr;
+    }
+
+    if (m_SwsContext != nullptr) {
+        sws_freeContext(m_SwsContext);
+        m_SwsContext = nullptr;
+    }
 
 }
 
